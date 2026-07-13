@@ -1,0 +1,39 @@
+name: resolve immutable harness lock
+
+on:
+  push:
+    branches: [codex/cloud-benchmark]
+    paths:
+      - toolchain/package.json
+      - .github/workflows/resolve-lock.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/cloud-benchmark
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - name: Resolve exact npm integrity graph
+        run: npm install --package-lock-only --ignore-scripts --prefix toolchain
+      - name: Verify top-level versions are exact
+        run: node -e "const p=require('./toolchain/package.json'); for (const [n,v] of Object.entries(p.dependencies)) if (!/^\\d+\\.\\d+\\.\\d+([+-].+)?$/.test(v)) throw new Error(n+' is not exact: '+v)"
+      - name: Commit lockfile
+        run: |
+          if git diff --quiet -- toolchain/package-lock.json; then
+            echo "Lockfile already current"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add toolchain/package-lock.json
+          git commit -m "Lock genuine harness npm artifacts"
+          git push origin HEAD:codex/cloud-benchmark

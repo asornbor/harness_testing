@@ -1,0 +1,12 @@
+{
+  "name": "harness-benchmark-toolchain",
+  "private": true,
+  "engines": {"node": ">=22"},
+  "dependencies": {
+    "@openai/codex": "0.139.0",
+    "@anthropic-ai/claude-code": "2.1.177",
+    "@earendil-works/pi-coding-agent": "0.74.0",
+    "@charmland/crush": "0.83.0",
+    "opencode-ai": "1.17.18"
+  }
+}
