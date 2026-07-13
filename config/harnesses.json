@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "target": {"model": "gpt-5.6-sol", "effort": "high"},
+  "node_harnesses": {
+    "codex": {"package": "@openai/codex", "version": "0.139.0", "binary": "codex", "source": "https://github.com/openai/codex"},
+    "claude": {"package": "@anthropic-ai/claude-code", "version": "2.1.177", "binary": "claude", "source": "https://github.com/anthropics/claude-code"},
+    "pi": {"package": "@earendil-works/pi-coding-agent", "version": "0.74.0", "binary": "pi", "source": "https://github.com/earendil-works/pi"},
+    "crush": {"package": "@charmland/crush", "version": "0.83.0", "binary": "crush", "source": "https://github.com/charmbracelet/crush"},
+    "opencode": {"package": "opencode-ai", "version": "1.17.18", "binary": "opencode", "source": "https://github.com/anomalyco/opencode"}
+  },
+  "cliproxyapi": {
+    "version": "7.2.65",
+    "release": "https://github.com/router-for-me/CLIProxyAPI/releases/tag/v7.2.65",
+    "linux_amd64_asset": "CLIProxyAPI_7.2.65_linux_amd64.tar.gz"
+  }
+}
