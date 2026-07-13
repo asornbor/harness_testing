@@ -1,0 +1,54 @@
+name: credential-free benchmark validation
+
+on:
+  push:
+    branches: [codex/cloud-benchmark]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.lock
+      - run: pytest -q
+      - name: Prohibit simulated harness executables
+        run: |
+          test ! -e tools/harnesses
+          ! grep -R --line-number -E 'harness_sim|deterministic provider response|mock execution' adapters benchkit docker config
+  genuine-binaries:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: toolchain/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m benchkit.bootstrap --skip-proxy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: genuine-binary-manifest
+          path: artifacts/versions/manifest.json
+  smoke:
+    runs-on: ubuntu-24.04
+    needs: [unit, genuine-binaries]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run genuine CLIs against protocol server
+        run: ./bench smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-artifacts
+          path: results/smoke
