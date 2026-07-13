@@ -25,7 +25,15 @@ jobs:
       - name: Resolve exact npm integrity graph
         run: npm install --package-lock-only --ignore-scripts --prefix toolchain
       - name: Verify top-level versions are exact
-        run: node -e "const p=require('./toolchain/package.json'); for (const [n,v] of Object.entries(p.dependencies)) if (!/^\\d+\\.\\d+\\.\\d+([+-].+)?$/.test(v)) throw new Error(n+' is not exact: '+v)"
+        run: |
+          node - <<'NODE'
+          const p = require('./toolchain/package.json')
+          for (const [name, version] of Object.entries(p.dependencies)) {
+            if (!/^\d+\.\d+\.\d+([+-].+)?$/.test(version)) {
+              throw new Error(name + ' is not exact: ' + version)
+            }
+          }
+          NODE
       - name: Commit lockfile
         run: |
           if git diff --quiet -- toolchain/package-lock.json; then
