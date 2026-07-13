@@ -18,11 +18,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install -r requirements.lock
+      - run: python -m pip install -e .
       - run: pytest -q
       - name: Prohibit simulated harness executables
         run: |
           test ! -e tools/harnesses
-          ! grep -R --line-number -E 'harness_sim|deterministic provider response|mock execution' adapters benchkit docker config
+          ! rg --line-number -E 'harness_sim|deterministic provider response|mock execution' adapters benchkit docker config
   genuine-binaries:
     runs-on: ubuntu-24.04
     steps:
@@ -36,6 +37,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m benchkit.bootstrap --skip-proxy
+      - run: python -m benchkit.bootstrap --verify-only --skip-proxy
       - uses: actions/upload-artifact@v4
         with:
           name: genuine-binary-manifest
@@ -52,3 +54,21 @@ jobs:
         with:
           name: smoke-artifacts
           path: results/smoke
+
+  pilot-report:
+    runs-on: ubuntu-24.04
+    needs: [unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install -e .
+      - run: ./bench pilot --no-subscription --seed 123 --repetitions 1
+      - run: ./bench report --results results/pilot --output results/report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pilot-report-artifacts
+          path: results
